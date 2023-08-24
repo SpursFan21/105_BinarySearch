@@ -1,6 +1,7 @@
 #include <ctime>
 #include <iostream>
 #include <string> // for getline
+#include <stdexcept> // Add this for exception handling
 
 // Define a class representing a Flight
 class Flight {
@@ -76,6 +77,36 @@ private:
         return findMaxRecursive(current->right);
     }
 
+    // Function to delete Node
+    Node* deleteNode(Node* current, int flightNumber) {
+        if (current == nullptr) {
+            return current;
+        }
+
+        if (flightNumber < current->flight.flightNumber) {
+            current->left = deleteNode(current->left, flightNumber);
+        }
+        else if (flightNumber > current->flight.flightNumber) {
+            current->right = deleteNode(current->right, flightNumber);
+        }
+        else {
+            if (current->left == nullptr) {
+                Node* temp = current->right;
+                delete current;
+                return temp;
+            }
+            else if (current->right == nullptr) {
+                Node* temp = current->left;
+                delete current;
+                return temp;
+            }
+            Node* temp = findMinRecursive(current->right);
+            current->flight = temp->flight;
+            current->right = deleteNode(current->right, temp->flight.flightNumber);
+        }
+        return current;
+    }
+
     //Function to complie the flight tree contents in order and cout them a list
     void inOrderTraversal(Node* current) {
         if (current){
@@ -124,6 +155,11 @@ public:
         return nullptr;
     }
 
+    // Method to delete a flight by flight number
+    void deleteFlight(int flightNumber) {
+        root = deleteNode(root, flightNumber);
+    }
+
     void printAllFlightNumbers() {
         std::cout << "All Flight Numbers:" << std::endl;
         inOrderTraversal(root);
@@ -153,7 +189,8 @@ int main() {
         std::cout << "3. Find Maximum Flight" << std::endl;
         std::cout << "4. View All Flight Numbers" << std::endl;
         std::cout << "5. Enter New Flights" << std::endl;
-        std::cout << "6. Exit" << std::endl;
+        std::cout << "6. Delete Flight Number" << std::endl;
+        std::cout << "7. Exit" << std::endl;
         std::cout << "Enter your choice: ";
         std::cin >> choice;
 
@@ -224,6 +261,20 @@ int main() {
             break;
         }
         case 6: {
+            try {
+                int deleteFlightNumber;
+                std::cout << "Enter Flight Number to delete: ";
+                std::cin >> deleteFlightNumber;
+
+                manager.deleteFlight(deleteFlightNumber);
+                std::cout << "Flight with number " << deleteFlightNumber << " deleted." << std::endl;
+            }
+            catch (const std::exception& e) {
+                std::cerr << "Error: " << e.what() << std::endl;
+            }
+            break;
+        }
+        case 7: {
             std::cout << "Exiting the program." << std::endl;
             return 0;
         }
@@ -231,7 +282,7 @@ int main() {
             std::cout << "Invalid choice. Please enter a valid option." << std::endl;
         }
 
-    } while (choice != 6);
+    } while (choice != 7);
 
     return 0;
 }
